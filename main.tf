@@ -14,15 +14,15 @@ provider "azurerm" {
   features {}
 }
 
-resource "azurerm_resource_group" "dev-rg" {
-  name     = var.resource_group
-  location = var.location
-}
+# resource "azurerm_resource_group" "dev-rg" {
+#   name     = var.resource_group
+#   location = var.location
+# }
 
 resource "azurerm_storage_account" "dev-sa" {
   name                     = var.storage_account
-  resource_group_name      = azurerm_resource_group.dev-rg.name
-  location                 = azurerm_resource_group.dev-rg.location
+  resource_group_name      = var.resource_group
+  location                 = var.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 
