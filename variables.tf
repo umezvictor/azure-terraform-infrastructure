@@ -12,7 +12,7 @@ variable "location" {
 
 variable "storage_account" {
   type    = string
-  default = "victorblaze-dev-storage-account"
+  default = "victorblazeappstorage"
 }
 
 variable "env" {
