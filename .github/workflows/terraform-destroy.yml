@@ -1,0 +1,29 @@
+name: "Terraform Destroy Sandbox"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  terraform-destroy:
+    name: "Terraform Destroy"
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+      - name: Terraform Init
+        run: terraform init -var-file="terraform.tfvars"
+        env:
+          TF_WORKSPACE: "azure-terraform-infrastructure"
+      - name: Terraform Workspace
+        run: terraform workspace select azure-terraform-infrastructure
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve -var-file="terraform.tfvars"
