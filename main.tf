@@ -38,7 +38,7 @@ resource "azurerm_storage_container" "dev_storage_container" {
 }
 
 # Create a Log Analytics workspace for Application Insights
-resource "azurerm_log_analytics_workspace" "example" {
+resource "azurerm_log_analytics_workspace" "dev_analytics" {
   name                = coalesce(var.ws_name, random_string.name.result)
   location            = azurerm_resource_group.dev_rg.location
   resource_group_name = azurerm_resource_group.dev_rg.name
@@ -47,12 +47,12 @@ resource "azurerm_log_analytics_workspace" "example" {
 }
 
 # Create an Application Insights instance for monitoring
-resource "azurerm_application_insights" "example" {
+resource "azurerm_application_insights" "dev_app_insights" {
   name                = coalesce(var.ai_name, random_string.name.result)
   location            = azurerm_resource_group.dev_rg.location
   resource_group_name = azurerm_resource_group.dev_rg.name
   application_type    = "web"
-  workspace_id        = azurerm_log_analytics_workspace.example.id
+  workspace_id        = azurerm_log_analytics_workspace.dev_analytics.id
 }
 
 resource "azurerm_service_plan" "dev_service_plan" {
@@ -64,7 +64,7 @@ resource "azurerm_service_plan" "dev_service_plan" {
 }
 
 resource "azurerm_linux_function_app" "weather_api" {
-  name                = "weatherapi"
+  name                = "vicdev-weatherapi"
   resource_group_name = azurerm_resource_group.dev_rg.name
   location            = azurerm_resource_group.dev_rg.location
 
