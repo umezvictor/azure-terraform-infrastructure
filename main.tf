@@ -37,7 +37,7 @@ resource "azurerm_storage_container" "dev_storage_container" {
   storage_account_name  = azurerm_storage_account.dev_storage_account.name
 }
 
-resource "azurerm_storage_container" "dev_storage_container" {
+resource "azurerm_storage_container" "dev_storage_container2" {
   name                  = "appcontainer2"
   container_access_type = "private"
   storage_account_name  = azurerm_storage_account.dev_storage_account.name
