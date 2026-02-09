@@ -21,6 +21,8 @@ resource "random_string" "name" {
   numeric = false
 }
 
+#skip_provider_registration
+
 # Create a storage account
 resource "azurerm_storage_account" "dev_storage_account" {
   name                     = coalesce(var.sa_name, random_string.name.result)
