@@ -1,4 +1,12 @@
 terraform {
+  cloud {
+
+    organization = "victorblaze22"
+
+    workspaces {
+      name = "azure-terraform-infrastructure"
+    }
+  }
   required_version = ">=1.9.0"
 
   required_providers {
