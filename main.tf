@@ -37,7 +37,7 @@ resource "azurerm_storage_container" "dev_storage_container" {
   storage_account_name  = azurerm_storage_account.dev_storage_account.name
 }
 
-# Create a Log Analytics workspace for Application Insights
+# Create a Log Analytics workspace for Application Insight
 resource "azurerm_log_analytics_workspace" "dev_analytics" {
   name                = coalesce(var.ws_name, random_string.name.result)
   location            = azurerm_resource_group.dev_rg.location
