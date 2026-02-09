@@ -81,6 +81,6 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
-      - name: Terraform Destroy
+      - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform destroy -auto-approve -var-file="terraform.tfvars"
+        run: terraform apply -auto-approve -var-file="terraform.tfvars"
