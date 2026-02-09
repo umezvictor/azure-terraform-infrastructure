@@ -39,16 +39,16 @@ resource "azurerm_storage_container" "dev-storage-container" {
 
 resource "azurerm_service_plan" "dev-sp" {
   name                = "app-service-plan"
-  resource_group_name = azurerm_resource_group.dev-rg.name
-  location            = azurerm_resource_group.dev-rg.location
+  resource_group_name = var.resource_group
+  location            = var.location
   os_type             = "Linux"
   sku_name            = "B1"
 }
 
 resource "azurerm_linux_function_app" "dev-function-app" {
   name                = "weather-api"
-  resource_group_name = azurerm_resource_group.dev-rg.name
-  location            = azurerm_resource_group.dev-rg.location
+  resource_group_name = var.resource_group
+  location            = var.location
 
   storage_account_name       = azurerm_storage_account.dev-sa.name
   storage_account_access_key = azurerm_storage_account.dev-sa.primary_access_key
