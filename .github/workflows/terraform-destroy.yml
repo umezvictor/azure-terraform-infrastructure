@@ -1,7 +1,7 @@
 name: "Terraform Destroy Sandbox"
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: #this is triggered manually from github actions
 
 jobs:
   terraform-destroy:
