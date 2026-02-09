@@ -1,58 +1,76 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 4.8.0"
-    }
-  }
+# This Terraform configuration creates a Flex Consumption plan app in Azure Functions 
+# with the required Storage account and Blob Storage deployment container.
 
-  required_version = ">=1.9.0"
+# Create a random pet to generate a unique resource group name
+resource "random_pet" "rg_name" {
+  prefix = var.resource_group_name_prefix
 }
 
-
-provider "azurerm" {
-  features {}
+# Create a resource group
+resource "azurerm_resource_group" "dev_rg" {
+  location = var.resource_group_location
+  name     = random_pet.rg_name.id
 }
 
-resource "azurerm_resource_group" "dev-rg" {
-  name     = var.resource_group
-  location = var.location
+# Random String for unique naming of resources
+resource "random_string" "name" {
+  length  = 8
+  special = false
+  upper   = false
+  lower   = true
+  numeric = false
 }
 
-resource "azurerm_storage_account" "dev-sa" {
-  name                     = var.storage_account
-  resource_group_name      = azurerm_resource_group.dev-rg.name
-  location                 = azurerm_resource_group.dev-rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-
-  tags = {
-    environment = var.env
-  }
+# Create a storage account
+resource "azurerm_storage_account" "dev_storage_account" {
+  name                     = coalesce(var.sa_name, random_string.name.result)
+  resource_group_name      = azurerm_resource_group.dev_rg.name
+  location                 = azurerm_resource_group.dev_rg.location
+  account_tier             = var.sa_account_tier
+  account_replication_type = var.sa_account_replication_type
 }
 
-resource "azurerm_storage_container" "dev-storage-container" {
-  name                  = var.storage_container
+# Create a storage container
+resource "azurerm_storage_container" "dev_storage_container" {
+  name                  = "appcontainer"
   container_access_type = "private"
-  storage_account_name  = azurerm_storage_account.dev-sa.name
+  storage_account_name  = azurerm_storage_account.dev_storage_account.name
 }
 
-resource "azurerm_service_plan" "dev-sp" {
-  name                = "app-service-plan"
-  resource_group_name = azurerm_resource_group.dev-rg.name
-  location            = azurerm_resource_group.dev-rg.location
+# Create a Log Analytics workspace for Application Insights
+resource "azurerm_log_analytics_workspace" "example" {
+  name                = coalesce(var.ws_name, random_string.name.result)
+  location            = azurerm_resource_group.dev_rg.location
+  resource_group_name = azurerm_resource_group.dev_rg.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
+# Create an Application Insights instance for monitoring
+resource "azurerm_application_insights" "example" {
+  name                = coalesce(var.ai_name, random_string.name.result)
+  location            = azurerm_resource_group.dev_rg.location
+  resource_group_name = azurerm_resource_group.dev_rg.name
+  application_type    = "web"
+  workspace_id        = azurerm_log_analytics_workspace.example.id
+}
+
+resource "azurerm_service_plan" "dev_service_plan" {
+  name                = "vicdev-service-plan"
+  resource_group_name = azurerm_resource_group.dev_rg.name
+  location            = azurerm_resource_group.dev_rg.location
+  sku_name            = "Y1"
   os_type             = "Linux"
-  sku_name            = "B1"
 }
 
-resource "azurerm_linux_function_app" "dev-function-app" {
-  name                = "weather-api"
-  resource_group_name = azurerm_resource_group.dev-rg.name
-  location            = azurerm_resource_group.dev-rg.location
+resource "azurerm_linux_function_app" "weather_api" {
+  name                = "weatherapi"
+  resource_group_name = azurerm_resource_group.dev_rg.name
+  location            = azurerm_resource_group.dev_rg.location
 
-  storage_account_name       = azurerm_storage_account.dev-sa.name
-  storage_account_access_key = azurerm_storage_account.dev-sa.primary_access_key
-  service_plan_id            = azurerm_service_plan.dev-sp.id
+  storage_account_name       = azurerm_storage_account.dev_storage_account.name
+  storage_account_access_key = azurerm_storage_account.dev_storage_account.primary_access_key
+  service_plan_id            = azurerm_service_plan.dev_service_plan.id
 
   site_config {
     application_stack {
@@ -61,6 +79,3 @@ resource "azurerm_linux_function_app" "dev-function-app" {
   }
 }
 
-# ensure you have local.settings.json file to your app code
-# publish your settings - func azure functionapp publish <YOUR_FUNCTION_APP_NAME> --publish-settings-only
-# publish your app - func azure functionapp publish <YOUR_FUNCTION_APP_NAME>
